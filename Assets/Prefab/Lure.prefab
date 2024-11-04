@@ -12,10 +12,10 @@ GameObject:
   - component: {fileID: 7485141078701982350}
   - component: {fileID: 1189828625007736662}
   - component: {fileID: 8804447096272265989}
-  - component: {fileID: 1822850040649646267}
+  - component: {fileID: 1472028096924114168}
   m_Layer: 0
   m_Name: Lure
-  m_TagString: Untagged
+  m_TagString: Lure
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -106,7 +106,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &1822850040649646267
+--- !u!54 &1472028096924114168
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

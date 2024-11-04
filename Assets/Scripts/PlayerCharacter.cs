@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using TMPro;
 
 
 public enum characterState
@@ -23,23 +24,42 @@ public class PlayerCharacter : MonoBehaviour
 
     Vector3 movement;
 
-    bool isThrown;
+    bool isThrown; //I want to throw this one time
+    bool isSuccessful;
 
 
-    public float CaughtMaxTime; //Maximum time that the fish will stay when you are reelingup
+    public float CaughtMaxTime = 5f; //Maximum time that the fish will stay when you are reelingup
+    public float CaughtPlayerTime;
     public float playerPower = 1f;
 
-    float fishPower = 10f;
+    public float currentPlayerPower = 0;
 
+    //float fishPower = 10f;
+
+    public GameObject ResultText;
+    public GameObject FishTimer;
+
+    public TextMeshProUGUI WinOrLose;
+    public TextMeshProUGUI TimerText;
+
+    public FishInfo SquareFish;
 
 
 
     // Start is called before the first frame update
     void Start()
     {
+        CaughtPlayerTime = CaughtMaxTime;
+
         isThrown = false;
         characterState = characterState.Default;
-       
+
+        WinOrLose = ResultText.GetComponent<TextMeshProUGUI>();
+        TimerText = FishTimer.GetComponent<TextMeshProUGUI>();
+
+        ResultText.SetActive(false);
+        FishTimer.SetActive(false);
+
         rb = GetComponent<Rigidbody>();
     }
 
@@ -134,29 +154,82 @@ public class PlayerCharacter : MonoBehaviour
 
     IEnumerator ExecuteGamePlay()
     {
-        //Lure thrown, and waiting for the thing to be caught.
-        yield return StartCoroutine(ExecuteFishCaught());
+        if (SquareFish.isCaught)
+        {
+            yield return StartCoroutine(ExecuteFishCaught());
+        }
 
 
-
-        yield return null;
+        if (isSuccessful)
+        {
+            yield return StartCoroutine(ExecuteWin());
+        }
+        else if (!isSuccessful)
+        {
+            yield return StartCoroutine(ExecuteLose());
+        }
 
     }
 
     IEnumerator ExecuteFishCaught()
     {
-        
+
         //5 4 3 2 1 Boom
-        
-        
-        //Camera will close up to what I got.
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            currentPlayerPower += playerPower;
+            Debug.Log(currentPlayerPower);
+        }
+
+        while (CaughtMaxTime > 0)
+        {
+
+            int sec = Mathf.FloorToInt(CaughtPlayerTime % Time.deltaTime);
+            int min = 0;
+
+            TimerText.text = string.Format("{0:00}:{1:00}", min, sec);
+            FishTimer.SetActive(true);
+
+            CaughtPlayerTime -= Time.deltaTime;
+          
 
 
+            if (CaughtMaxTime <= 0 && currentPlayerPower < SquareFish.fishPower)
+            {
+                isSuccessful = false;
+                yield return null;
+            }
+            else if (CaughtMaxTime <= 0 && currentPlayerPower > SquareFish.fishPower)
+            {
+                isSuccessful = true;
+                yield return null;
+            }
+
+        }
+
+        yield return null;
+    }
+
+
+    IEnumerator ExecuteWin()
+    {
+        ResultText.SetActive(true);
+        yield return null;
+    }
+
+    IEnumerator ExecuteLose()
+    {
+        ResultText.SetActive(true);
         yield return null;
     }
 
     void CatchFish()
     {
+        CaughtMaxTime -= Time.deltaTime;
+
+        
+
 
     }
 
