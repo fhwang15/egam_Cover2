@@ -14,7 +14,7 @@ public enum characterState
 public class PlayerCharacter : MonoBehaviour
 {
     public GameObject lure;
-    private GameObject currentLure;
+    public GameObject currentLure;
     
     public Rigidbody rb;
     public float speed;
@@ -25,7 +25,14 @@ public class PlayerCharacter : MonoBehaviour
 
     bool isThrown;
 
-    private Coroutine trackRoutine;
+
+    public float CaughtMaxTime; //Maximum time that the fish will stay when you are reelingup
+    public float playerPower = 1f;
+
+    float fishPower = 10f;
+
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -128,19 +135,9 @@ public class PlayerCharacter : MonoBehaviour
     IEnumerator ExecuteGamePlay()
     {
         //Lure thrown, and waiting for the thing to be caught.
-        yield return StartCoroutine(ExecuteWaitForIntro());
-
-
-        //If Caught, Enter this Coroutine
         yield return StartCoroutine(ExecuteFishCaught());
 
-        yield return null;
 
-    }
-
-    IEnumerator ExecuteWaitForIntro()
-    {
-        Debug.DrawRay(transform.position, Vector3.forward*1000f, Color.red);
 
         yield return null;
 
@@ -148,27 +145,31 @@ public class PlayerCharacter : MonoBehaviour
 
     IEnumerator ExecuteFishCaught()
     {
+        
+        //5 4 3 2 1 Boom
+        
+        
         //Camera will close up to what I got.
 
 
         yield return null;
     }
 
+    void CatchFish()
+    {
+
+    }
+
+
+
     //Can only move around when they are in Default State.
 
-    //게임 플레이의 순서
-    //디폴트 상태에서 돌아다닌다. 
-    //돌아다니다가도 스페이스를 누르면 피싱스테이트 돌입.
-    //ㄴ 스페이스를 누르면 루어가 날아간다. 루어가 바닥이나 어디든 닿으면 isDrawable == true.
-    //ㄴ 다시 스페이스를 누르면 isDrawable == false, 그리고 destroy object한다.
-    // 디폴트로 돌아가다. 그리고 피싱 스테이트일때는 못움직임.
 
 
 
     //만약 루어가 pond를 hit하면 곧바로 코루틴으로 돌입한다.
     //낚은 시나리오
     //ㄴ(물고기는 patrol 그리고 따라가기 그게 있음 state machine enum)
-    //ㄴ씨바아아아아아아아ㅏ알~
     //안 낚은 시나리오
     //ㄴ한 몇초 있다가 자동으로.
 
