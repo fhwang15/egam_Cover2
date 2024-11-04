@@ -27,8 +27,11 @@ public class PlayerCharacter : MonoBehaviour
     bool isThrown; //I want to throw this one time
     bool isSuccessful;
 
+    bool beforeCaught;
+    bool canIncreasePower = true;
 
-    public float CaughtMaxTime = 5f; //Maximum time that the fish will stay when you are reelingup
+
+    public float CaughtMaxTime; //Maximum time that the fish will stay when you are reelingup
     public float CaughtPlayerTime;
     public float playerPower = 1f;
 
@@ -49,7 +52,9 @@ public class PlayerCharacter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        CaughtPlayerTime = CaughtMaxTime;
+        CaughtMaxTime = 10f;
+
+        beforeCaught = true;
 
         isThrown = false;
         characterState = characterState.Default;
@@ -154,73 +159,96 @@ public class PlayerCharacter : MonoBehaviour
 
     IEnumerator ExecuteGamePlay()
     {
-        if (SquareFish.isCaught)
+
+        if (SquareFish.isCaught && beforeCaught)
         {
             yield return StartCoroutine(ExecuteFishCaught());
         }
 
 
-        if (isSuccessful)
+        else if (isSuccessful && !beforeCaught)
         {
+            yield return new WaitForSeconds(1f);
+
             yield return StartCoroutine(ExecuteWin());
         }
-        else if (!isSuccessful)
+        else if (!isSuccessful && !beforeCaught)
         {
             yield return StartCoroutine(ExecuteLose());
         }
 
+        //isCoroutineRunning = false;
     }
 
     IEnumerator ExecuteFishCaught()
     {
+        FishTimer.SetActive(true);
+        CaughtPlayerTime = CaughtMaxTime;
+        beforeCaught = true;
 
-        //5 4 3 2 1 Boom
-
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKey(KeyCode.Z) && canIncreasePower)
         {
-            currentPlayerPower += playerPower;
+            currentPlayerPower = currentPlayerPower + playerPower;
             Debug.Log(currentPlayerPower);
+            canIncreasePower = false;
+
+            StartCoroutine(ResetPowerIncrement());
         }
 
-        while (CaughtMaxTime > 0)
+        while (CaughtPlayerTime > 0)
         {
 
-            int sec = Mathf.FloorToInt(CaughtPlayerTime % Time.deltaTime);
-            int min = 0;
-
-            TimerText.text = string.Format("{0:00}:{1:00}", min, sec);
-            FishTimer.SetActive(true);
+            Timer();
 
             CaughtPlayerTime -= Time.deltaTime;
-          
 
-
-            if (CaughtMaxTime <= 0 && currentPlayerPower < SquareFish.fishPower)
-            {
-                isSuccessful = false;
-                yield return null;
-            }
-            else if (CaughtMaxTime <= 0 && currentPlayerPower > SquareFish.fishPower)
-            {
-                isSuccessful = true;
-                yield return null;
-            }
-
+            yield return null;
         }
 
-        yield return null;
+
+        isSuccessful = currentPlayerPower > SquareFish.fishPower;
+        beforeCaught = false;
+        FishTimer.SetActive(false);
+    }
+
+    IEnumerator ResetPowerIncrement()
+    {
+        yield return new WaitForSeconds(0.5f); // Wait for half a second
+        canIncreasePower = true; // Allow increment again
+    }
+
+    void Timer()
+    {
+        int min = Mathf.FloorToInt(CaughtPlayerTime / 60);
+        int sec = Mathf.FloorToInt(CaughtPlayerTime % 60);
+
+
+        TimerText.text = string.Format("{0:00}:{1:00}", min, sec);
+
+        Debug.Log($"CaughtPlayerTime: {CaughtPlayerTime}");
+
+        
+
     }
 
 
     IEnumerator ExecuteWin()
     {
         ResultText.SetActive(true);
+        WinOrLose.text = "Hurrah! You caught the Square Fish!";
+
+        Debug.Log(currentPlayerPower);
+
         yield return null;
     }
 
     IEnumerator ExecuteLose()
     {
         ResultText.SetActive(true);
+        WinOrLose.text = "The SquareFish Ran Away...";
+
+        Debug.Log(currentPlayerPower);
+
         yield return null;
     }
 
