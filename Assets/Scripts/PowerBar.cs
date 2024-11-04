@@ -1,9 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-public class ResetButton : MonoBehaviour
+using UnityEngine.UI;
+
+public class PowerBar : MonoBehaviour
 {
+    public Image bar;
+    public PlayerCharacter character;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -14,11 +19,5 @@ public class ResetButton : MonoBehaviour
     void Update()
     {
         
-    }
-
-    public void onPressed()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        Time.timeScale = 1.0f;
     }
 }

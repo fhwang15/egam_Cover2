@@ -41,9 +41,17 @@ public class PlayerCharacter : MonoBehaviour
 
     public GameObject ResultText;
     public GameObject FishTimer;
+    public GameObject currentPower;
+
+    public GameObject ResetButton;
+    public GameObject Press;
+
 
     public TextMeshProUGUI WinOrLose;
     public TextMeshProUGUI TimerText;
+    public TextMeshProUGUI PlayerText;
+
+    public TextMeshProUGUI Instruction;
 
     public FishInfo SquareFish;
 
@@ -52,7 +60,9 @@ public class PlayerCharacter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        CaughtMaxTime = 10f;
+
+
+        CaughtMaxTime = 12f;
 
         beforeCaught = true;
 
@@ -61,9 +71,14 @@ public class PlayerCharacter : MonoBehaviour
 
         WinOrLose = ResultText.GetComponent<TextMeshProUGUI>();
         TimerText = FishTimer.GetComponent<TextMeshProUGUI>();
+        PlayerText = currentPower.GetComponent<TextMeshProUGUI>();
+        Instruction = Press.GetComponent<TextMeshProUGUI>();
 
         ResultText.SetActive(false);
         FishTimer.SetActive(false);
+        currentPower.SetActive(false);
+        ResetButton.SetActive(false);
+        Press.SetActive(false);
 
         rb = GetComponent<Rigidbody>();
     }
@@ -183,12 +198,24 @@ public class PlayerCharacter : MonoBehaviour
     IEnumerator ExecuteFishCaught()
     {
         FishTimer.SetActive(true);
+        currentPower.SetActive(true);
+        Press.SetActive(true);
+
+        Instruction.text = "Press 'Z' to catch the fish!";
+
         CaughtPlayerTime = CaughtMaxTime;
         beforeCaught = true;
 
         if (Input.GetKey(KeyCode.Z) && canIncreasePower)
         {
             currentPlayerPower = currentPlayerPower + playerPower;
+
+            PlayerText.text = currentPlayerPower.ToString();
+            if (currentPlayerPower > 10)
+            {
+                currentPlayerPower = 10;
+            }
+
             Debug.Log(currentPlayerPower);
             canIncreasePower = false;
 
@@ -206,7 +233,7 @@ public class PlayerCharacter : MonoBehaviour
         }
 
 
-        isSuccessful = currentPlayerPower > SquareFish.fishPower;
+        isSuccessful = currentPlayerPower >= SquareFish.fishPower;
         beforeCaught = false;
         FishTimer.SetActive(false);
     }
@@ -235,9 +262,10 @@ public class PlayerCharacter : MonoBehaviour
     IEnumerator ExecuteWin()
     {
         ResultText.SetActive(true);
-        WinOrLose.text = "Hurrah! You caught the Square Fish!";
+        ResetButton.SetActive(true);
 
-        Debug.Log(currentPlayerPower);
+        WinOrLose.text = "Hurrah! You caught the Square Fish!";
+        Time.timeScale = 0f;
 
         yield return null;
     }
@@ -245,47 +273,13 @@ public class PlayerCharacter : MonoBehaviour
     IEnumerator ExecuteLose()
     {
         ResultText.SetActive(true);
-        WinOrLose.text = "The SquareFish Ran Away...";
+        ResetButton.SetActive(true);
 
-        Debug.Log(currentPlayerPower);
+
+        WinOrLose.text = "The Square Fish Ran Away...";
+        Time.timeScale = 0f;
 
         yield return null;
     }
-
-    void CatchFish()
-    {
-        CaughtMaxTime -= Time.deltaTime;
-
-        
-
-
-    }
-
-
-
-    //Can only move around when they are in Default State.
-
-
-
-
-    //만약 루어가 pond를 hit하면 곧바로 코루틴으로 돌입한다.
-    //낚은 시나리오
-    //ㄴ(물고기는 patrol 그리고 따라가기 그게 있음 state machine enum)
-    //안 낚은 시나리오
-    //ㄴ한 몇초 있다가 자동으로.
-
-    //각자 다른 물고기 종류가 있지만 이건 나중에 scriptable object로 만들기
-
-
-    //Coroutine 순서
-    //낚은 시나리오 (우선 이것만)
-    //루어가 던져졌으니 계속 대기.
-    // 만약 트리거에 물고기가 걸리면
-    // 1. 연타 코루틴에 돌입
-    // 1-2. 일정 이상 연타되지 않으면 그냥 뒤져라
-    // . 일정 이상 되면 낚음
-
-    //안낚은 시나리오 (스트레치)
-
 
 }
