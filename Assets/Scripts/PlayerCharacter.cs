@@ -211,7 +211,7 @@ public class PlayerCharacter : MonoBehaviour
             currentPlayerPower = currentPlayerPower + playerPower;
 
             PlayerText.text = currentPlayerPower.ToString();
-            if (currentPlayerPower > 10)
+            if (currentPlayerPower >= 10)
             {
                 currentPlayerPower = 10;
             }
