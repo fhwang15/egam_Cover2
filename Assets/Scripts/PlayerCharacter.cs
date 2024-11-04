@@ -14,6 +14,7 @@ public enum characterState
 public class PlayerCharacter : MonoBehaviour
 {
     public GameObject lure;
+    private GameObject currentLure;
     
     public Rigidbody rb;
     public float speed;
@@ -58,13 +59,20 @@ public class PlayerCharacter : MonoBehaviour
                 break;
         }
 
-        Debug.Log(characterState.ToString());
+      
     }
 
 
     void DefaultState()
     {
         Run(); //If character did not throw the rod, then it will move around.
+
+        if (currentLure != null)
+        {
+            Destroy(currentLure);
+            currentLure = null;
+        }
+
         if (isThrown)
         {
             isThrown = false;
@@ -99,15 +107,19 @@ public class PlayerCharacter : MonoBehaviour
 
     void ThrowingLure()
     {
-        GameObject Lure = Instantiate(lure, this.transform);
-        Rigidbody rb = lure.GetComponent<Rigidbody>();
-        Lure.transform.position = this.transform.position;
+        if(currentLure == null)
+        {
+            Vector3 spawnPosition = this.transform.position + this.transform.forward;
 
-        Vector3 throwAngle = this.transform.forward * 50f;
-        float throwPower = 5f;
+            currentLure = Instantiate(lure, spawnPosition, this.transform.rotation);
+            Rigidbody rb = currentLure.GetComponent<Rigidbody>();
 
-        throwAngle.y = 25f;
-        rb.AddForce(throwAngle * throwPower, ForceMode.Impulse);
+            Vector3 throwAngle = this.transform.forward;
+            float throwPower = 5f;
+
+            throwAngle.y = 0.25f;
+            rb.AddForce(throwAngle.normalized * throwPower, ForceMode.Impulse);
+        }
     }
 
 
