@@ -8,8 +8,10 @@ using TMPro;
 public enum characterState
 {
     Default,
-    Fishing,
-
+    Throwing,
+    Catching,
+    Fight,
+    Ending
 }
 
 public class PlayerCharacter : MonoBehaviour
@@ -35,9 +37,8 @@ public class PlayerCharacter : MonoBehaviour
     public float CaughtPlayerTime;
     public float playerPower = 1f;
 
-    public float currentPlayerPower = 0;
+    public float currentPlayerPower = 0; //Determines player power.
 
-    //float fishPower = 10f;
 
     public GameObject ResultText;
     public GameObject FishTimer;
@@ -54,6 +55,9 @@ public class PlayerCharacter : MonoBehaviour
     public TextMeshProUGUI Instruction;
 
     public FishInfo SquareFish;
+
+
+    public Coroutine fishingRoutine;
 
 
 
@@ -101,8 +105,8 @@ public class PlayerCharacter : MonoBehaviour
             case characterState.Default:
                 DefaultState();
                 break;
-            case characterState.Fishing:
-                FishingState();
+            case characterState.Throwing:
+                ThrowingState();
                 break;
         }
 
@@ -139,16 +143,20 @@ public class PlayerCharacter : MonoBehaviour
 
 
 
-    void FishingState()
+    void ThrowingState()
     {
-        rb.velocity = Vector3.zero; //Does not allow the player to move.
-        if (!isThrown)
+        if(fishingRoutine == null)
         {
-            ThrowingLure();
-            isThrown = true;
-        }
+            rb.velocity = Vector3.zero; //Does not allow the player to move.
+            if (!isThrown)
+            {
+                ThrowingLure();
+                isThrown = true;
+            }
 
-        StartCoroutine(ExecuteGamePlay()); //Once character throws the rod, enter the coroutine.
+           //fishingRoutine = StartCoroutine(ExecuteGamePlay()); //Once character throws the rod, enter the coroutine.
+        }
+     
     }
 
 
@@ -169,117 +177,111 @@ public class PlayerCharacter : MonoBehaviour
         }
     }
 
+    void CatchingState()
+    {
 
+    }
    
 
-    IEnumerator ExecuteGamePlay()
+    void FightState()
     {
-
-        if (SquareFish.isCaught && beforeCaught)
-        {
-            yield return StartCoroutine(ExecuteFishCaught());
-        }
-
-
-        else if (isSuccessful && !beforeCaught)
-        {
-            yield return new WaitForSeconds(1f);
-
-            yield return StartCoroutine(ExecuteWin());
-        }
-        else if (!isSuccessful && !beforeCaught)
-        {
-            yield return StartCoroutine(ExecuteLose());
-        }
-
-        //isCoroutineRunning = false;
-    }
-
-    IEnumerator ExecuteFishCaught()
-    {
-        FishTimer.SetActive(true);
-        currentPower.SetActive(true);
-        Press.SetActive(true);
-
-        Instruction.text = "Press 'Z' to catch the fish!";
-
-        CaughtPlayerTime = CaughtMaxTime;
-        beforeCaught = true;
-
-        if (Input.GetKey(KeyCode.Z) && canIncreasePower)
-        {
-            currentPlayerPower = currentPlayerPower + playerPower;
-
-            PlayerText.text = currentPlayerPower.ToString();
-            if (currentPlayerPower >= 10)
-            {
-                currentPlayerPower = 10;
-            }
-
-            Debug.Log(currentPlayerPower);
-            canIncreasePower = false;
-
-            StartCoroutine(ResetPowerIncrement());
-        }
-
-        while (CaughtPlayerTime > 0)
-        {
-
-            Timer();
-
-            CaughtPlayerTime -= Time.deltaTime;
-
-            yield return null;
-        }
-
-
-        isSuccessful = currentPlayerPower >= SquareFish.fishPower;
-        beforeCaught = false;
-        FishTimer.SetActive(false);
-    }
-
-    IEnumerator ResetPowerIncrement()
-    {
-        yield return new WaitForSeconds(0.5f); // Wait for half a second
-        canIncreasePower = true; // Allow increment again
-    }
-
-    void Timer()
-    {
-        int min = Mathf.FloorToInt(CaughtPlayerTime / 60);
-        int sec = Mathf.FloorToInt(CaughtPlayerTime % 60);
-
-
-        TimerText.text = string.Format("{0:00}:{1:00}", min, sec);
-
-        Debug.Log($"CaughtPlayerTime: {CaughtPlayerTime}");
-
-        
 
     }
 
+    //IEnumerator ExecuteGamePlay()
+    //{
 
-    IEnumerator ExecuteWin()
-    {
-        ResultText.SetActive(true);
-        ResetButton.SetActive(true);
-
-        WinOrLose.text = "Hurrah! You caught the Square Fish!";
-        Time.timeScale = 0f;
-
-        yield return null;
-    }
-
-    IEnumerator ExecuteLose()
-    {
-        ResultText.SetActive(true);
-        ResetButton.SetActive(true);
+    //    if (SquareFish.isCaught && beforeCaught)
+    //    {
+    //        yield return StartCoroutine(ExecuteFishCaught());
+    //    }
 
 
-        WinOrLose.text = "The Square Fish Ran Away...";
-        Time.timeScale = 0f;
+    //    else if (isSuccessful && !beforeCaught)
+    //    {
+    //        yield return new WaitForSeconds(1f);
 
-        yield return null;
-    }
+    //        yield return StartCoroutine(ExecuteWin());
+    //    }
+    //    else if (!isSuccessful && !beforeCaught)
+    //    {
+    //        yield return StartCoroutine(ExecuteLose());
+    //    }
+
+    //    fishingRoutine = null;
+    //}
+
+    //IEnumerator ExecuteFishCaught()
+    //{
+    //    FishTimer.SetActive(true);
+    //    currentPower.SetActive(true);
+    //    Press.SetActive(true);
+
+    //    Instruction.text = "Press 'Z' to catch the fish!";
+
+    //    CaughtPlayerTime = CaughtMaxTime;
+    //    Debug.Log("Resetting Timer");
+
+    //    beforeCaught = true;
+
+    //    if (Input.GetKey(KeyCode.Z) && canIncreasePower)
+    //    {
+    //        currentPlayerPower = currentPlayerPower + playerPower;
+
+    //        PlayerText.text = currentPlayerPower.ToString();
+    //        if (currentPlayerPower >= 10)
+    //        {
+    //            currentPlayerPower = 10;
+    //        }
+
+    //        Debug.Log(currentPlayerPower);
+    //        canIncreasePower = false;
+
+    //        StartCoroutine(ResetPowerIncrement());
+    //    }
+
+    //    while (CaughtPlayerTime > 0)
+    //    {
+
+    //        CaughtPlayerTime -= Time.deltaTime;
+
+    //        yield return null;
+    //    }
+
+
+    //    isSuccessful = currentPlayerPower >= SquareFish.fishPower;
+    //    beforeCaught = false;
+    //    FishTimer.SetActive(false);
+    //}
+
+    //IEnumerator ResetPowerIncrement()
+    //{
+    //    yield return new WaitForSeconds(0.5f); // Wait for half a second
+    //    canIncreasePower = true; // Allow increment again
+    //}
+
+
+    //IEnumerator ExecuteWin()
+    //{
+    //    ResultText.SetActive(true);
+    //    ResetButton.SetActive(true);
+
+    //    WinOrLose.text = "Hurrah! You caught the Square Fish!";
+    //    Time.timeScale = 0f;
+
+    //    yield return null;
+    //}
+
+    //IEnumerator ExecuteLose()
+    //{
+    //    ResultText.SetActive(true);
+    //    ResetButton.SetActive(true);
+
+
+    //    WinOrLose.text = "The Square Fish Ran Away...";
+    //    Time.timeScale = 0f;
+
+    //    yield return null;
+    //}
 
 }
