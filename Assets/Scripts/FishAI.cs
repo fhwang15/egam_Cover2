@@ -22,16 +22,10 @@ public class FishAI : MonoBehaviour
     private NavMeshAgent agent;
     private Vector3 targetPosition;
 
+    public FishCondition bobbing;
 
     bool isKnockedBack = false;
-    float knockbackForce = 0.5f;
-    float knockbackDuration = 0.5f;
-
-    float knockbackTimer = 0f;
-
-    Vector3 knockbackDirection;
-
-
+    public float knockbackDuration = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -43,10 +37,32 @@ public class FishAI : MonoBehaviour
     void Update()
     {
 
-        // 넉백 처리
-        if (isKnockedBack)
+    } 
+    
+    public void Patrol()
+    {
+       if (!isWaiting && HasReachedDestination())
+       {
+                StartCoroutine(WaitForNextDestination());
+                isReached = true;
+        }
+        
+    }
+
+
+    public void Chasing()
+    {   
+        if (FollowingLure != null && FollowingLure.currentLure != null)
         {
-            KnockBack();
+            StartCoroutine(ChasingDetails());
+        }
+    }
+
+    public void Fighting()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+
         }
     }
 
@@ -78,66 +94,18 @@ public class FishAI : MonoBehaviour
         return false;
     }
 
-    public void Patrol()
+   
+
+    public void ApplyKnockback(Vector3 sourcePosition)
     {
-       if (!isWaiting && HasReachedDestination())
-       {
-                StartCoroutine(WaitForNextDestination());
-                isReached = true;
-        }
-        
+        if (isKnockedBack) return;
+
+        // 넉백 방향 계산
+        Vector3 knockbackDirection = (transform.position - sourcePosition).normalized;
+
+        // 넉백 실행
+        StartCoroutine(KnockbackRoutine(knockbackDirection));
     }
-
-
-    public void Chasing()
-    {   
-        if (FollowingLure != null && FollowingLure.currentLure != null)
-        {
-            StartCoroutine(ChasingDetails());
-        }
-    }
-
-
-
-    public void ApplyKnockback(Vector3 attackDirection)
-    {
-        isKnockedBack = true;
-        agent.enabled = false;
-        knockbackDirection = attackDirection.normalized;
-    }
-
-    void KnockBack()
-    {
-        if (isKnockedBack)
-        {
-            knockbackTimer += Time.deltaTime;
-
-            if (knockbackTimer < knockbackDuration)
-            {
-                transform.position += knockbackDirection * knockbackForce * Time.deltaTime;
-            }
-            else
-            {
-                // 넉백 종료
-                isKnockedBack = false;
-                knockbackTimer = 0f;
-                agent.enabled = true; // 다시 NavMeshAgent 활성화
-
-                // 넉백 후 다시 추적을 시작하도록
-                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 1f, NavMesh.AllAreas))
-                {
-                    agent.Warp(hit.position); // NavMesh 상의 유효한 위치로 워프
-                }
-                else
-                {
-                    Debug.LogError("Failed to find valid position on the NavMesh after knockback.");
-                }
-
-            }
-        }
-    }
-
-
 
 
     IEnumerator WaitForNextDestination()
@@ -153,6 +121,46 @@ public class FishAI : MonoBehaviour
     {
         yield return new WaitForSeconds(waitingTime);
         agent.SetDestination(FollowingLure.currentLure.transform.position);
+    }
+
+
+    private IEnumerator KnockbackRoutine(Vector3 direction)
+    {
+        isKnockedBack = true;
+
+        // NavMesh 에이전트 비활성화 없이 넉백 적용
+        agent.isStopped = true; // 이동 중지
+        float timer = 0f;
+        float knockbackStrength = 3; // 넉백 강도
+        
+        Vector3 initialPosition = transform.position;
+
+        // 넉백 효과가 끝날 때까지 루프
+        while (timer < knockbackDuration)
+        {
+            // 넉백 방향에 따라 물고기의 속도 설정
+            Vector3 knockbackVelocity = direction * knockbackStrength;
+            agent.velocity = knockbackVelocity;
+
+            // 넉백 종료 조건: 지정한 시간 동안 이동
+            timer += Time.deltaTime;
+
+            yield return null;
+        }
+
+        Debug.Log("fishBite before: " + bobbing.fishBite);
+        bobbing.fishBite++;
+        Debug.Log("fishBite after: " + bobbing.fishBite);
+
+        // NavMesh 에이전트 활성화
+        agent.isStopped = false; // 이동 재개
+
+        // 경로 재탐색 (다시 미끼를 쫓아가도록 설정)
+        agent.SetDestination(FollowingLure.currentLure.transform.position);
+
+        isKnockedBack = false;
+
+        yield return null;
     }
 
 
