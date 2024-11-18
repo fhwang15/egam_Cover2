@@ -29,6 +29,12 @@ public class FishCondition : MonoBehaviour
     public FishState currentstate = FishState.Patroling;
 
 
+    public float detectionRadius = 1f;
+    public float detectionRange = 2f;
+    public Transform rayorigin;
+    public LayerMask targetLayer;
+
+
     void Start()
     {
         fishBite = 0;
@@ -49,9 +55,10 @@ public class FishCondition : MonoBehaviour
         switch (currentstate)
         {
             case FishState.Patroling:
-                if(fishAi != null)
+                if (fishAi != null)
                 {
-                    fishAi.ResumePatrol();
+                    detectLure();
+                    fishAi.Patrol();
                 }
                 break;
 
@@ -79,13 +86,30 @@ public class FishCondition : MonoBehaviour
             switch (newState)
             {
                 case FishState.Patroling:
-                    fishAi.ResumePatrol();
+                    fishAi.Patrol();
                     break;
                 case FishState.Chasing:
                     fishAi.Chasing();
                     break;
             }
         }
+    }
+
+
+    void detectLure()
+    {
+        Vector3 direction = transform.forward;
+
+        RaycastHit hit;
+
+        if (Physics.SphereCast(rayorigin.position, detectionRadius, direction, out hit, detectionRange, targetLayer))
+        {
+            Debug.Log("Detected: " + hit.collider.gameObject.name);
+
+            ChangeState(FishState.Chasing);
+        }
+
+        Debug.DrawRay(transform.position, direction * detectionRange, Color.green);
     }
 
 
@@ -98,7 +122,7 @@ public class FishCondition : MonoBehaviour
                 Vector3 attackDirection = transform.position - collision.gameObject.transform.position;
                 
 
-                    fishBite = fishBite + 1;
+                fishBite = fishBite + 1;
                 fishAi.ApplyKnockback(attackDirection);
             
             } 

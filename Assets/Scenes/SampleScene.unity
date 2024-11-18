@@ -850,6 +850,12 @@ MonoBehaviour:
   speed: 0
   fishAi: {fileID: 371201793}
   currentstate: 0
+  detectionRadius: 1
+  detectionRange: 5
+  rayorigin: {fileID: 0}
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &371201793
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2121,7 +2127,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patrollingRadius: 3
-  waitingTime: 3
+  waitingTime: 1.5
   chaseDistance: 3
   reachedRandomPoint: 1
   FollowingLure: {fileID: 397708136}
@@ -2222,7 +2228,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.49999997
-  m_Speed: 1
+  m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -2280,6 +2286,12 @@ MonoBehaviour:
   speed: 0
   fishAi: {fileID: 1907238384}
   currentstate: 0
+  detectionRadius: 1
+  detectionRange: 2
+  rayorigin: {fileID: 1907238388}
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &1930336505
 GameObject:
   m_ObjectHideFlags: 0

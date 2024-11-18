@@ -16,8 +16,8 @@ public class FishAI : MonoBehaviour
     public PlayerCharacter FollowingLure;
 
     bool isChasing;
-    bool isWaiting = false;
-    bool isReached = false;
+    bool isWaiting = false; //waiting for the next random movement to be done.
+    bool isReached = true; //waiting to be reached?
 
     private NavMeshAgent agent;
     private Vector3 targetPosition;
@@ -32,31 +32,16 @@ public class FishAI : MonoBehaviour
     Vector3 knockbackDirection;
 
 
+
     // Start is called before the first frame update
     void Start()
     {
-
         agent = GetComponent<NavMeshAgent>(); //AI세팅해서 대충 가져오기
         NextDestination(); //먼저 갈 곳을 정해
     }
 
     void Update()
     {
-
-
-        if (!isWaiting && HasReachedDestination())
-        {
-            StartCoroutine(WaitForNextDestination()); //이때부터 계속 코루틴을 돌리기
-            isReached = true;
-            
-        }
-
-        if (isChasing && FollowingLure != null && FollowingLure.currentLure != null)
-        {
-            agent.SetDestination(FollowingLure.currentLure.transform.position);
-        }
-
-       
 
         // 넉백 처리
         if (isKnockedBack)
@@ -66,7 +51,51 @@ public class FishAI : MonoBehaviour
     }
 
 
+    void NextDestination()
+    {
+        if (isReached) //Don't look for random destination until it reaches the destination.
+        {
+            patrollingRadius = Random.Range(1, 7);
+            Vector3 randomDirection = transform.position + Random.insideUnitSphere * patrollingRadius; // 지정된 범위 내 랜덤 위치
 
+
+            NavMeshHit hit;
+
+            if (NavMesh.SamplePosition(randomDirection, out hit, patrollingRadius, NavMesh.AllAreas))
+            {
+                agent.SetDestination(randomDirection);
+                isReached = false;
+            }
+        }
+    }
+
+    bool HasReachedDestination()
+    {
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void Patrol()
+    {
+       if (!isWaiting && HasReachedDestination())
+       {
+                StartCoroutine(WaitForNextDestination());
+                isReached = true;
+        }
+        
+    }
+
+
+    public void Chasing()
+    {   
+        if (FollowingLure != null && FollowingLure.currentLure != null)
+        {
+            StartCoroutine(ChasingDetails());
+        }
+    }
 
 
 
@@ -103,57 +132,12 @@ public class FishAI : MonoBehaviour
                 {
                     Debug.LogError("Failed to find valid position on the NavMesh after knockback.");
                 }
-         
+
             }
         }
     }
 
 
-
-    void NextDestination()
-    {
-        if (isReached) //Don't look for random destination until it reaches the destination.
-        {
-            Vector3 randomDirection = transform.position + Random.insideUnitSphere * patrollingRadius; // 지정된 범위 내 랜덤 위치
-
-            NavMeshHit hit;
-
-            if (NavMesh.SamplePosition(randomDirection, out hit, patrollingRadius, NavMesh.AllAreas))
-            {
-                agent.SetDestination(randomDirection);
-                isReached = false;
-            }
-        }
-    }
-
-    bool HasReachedDestination()
-    {
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-        {
-            return true;
-        }
-        return false;
-    }
-
-
-
-
-
-
-    public void Chasing()
-    {
-        isChasing = true;
-        if (FollowingLure != null && FollowingLure.currentLure != null)
-        {
-            agent.SetDestination(FollowingLure.currentLure.transform.position);
-        }
-    }
-
-    public void ResumePatrol()
-    {
-        isChasing = false;
-        StartCoroutine(Patrol());
-    }
 
 
     IEnumerator WaitForNextDestination()
@@ -165,35 +149,11 @@ public class FishAI : MonoBehaviour
 
     }
 
-
-    IEnumerator Patrol()
+    IEnumerator ChasingDetails()
     {
-        while (!isChasing)
-        {
-            NextDestination(); // 쫓아다니지 않을때 랜덤하게 움직인다.
-          
-            while (!HasReachedDestination() && !isChasing)
-            {
-                if (FollowingLure.currentLure != null)
-                {
-                    float distanceToPlayer = Vector3.Distance(transform.position, FollowingLure.currentLure.transform.position);
-
-                    if (distanceToPlayer <= chaseDistance)
-                    {
-                        Chasing();
-                        yield break;
-                    }
-                }
-
-                yield return null;
-            }
-
-            yield return new WaitForSeconds(waitingTime); //새로운 곳으로 움직일때마다 일정 시간동안 기다렸다가 다시찾기 이하생략.
-
-        }
+        yield return new WaitForSeconds(waitingTime);
+        agent.SetDestination(FollowingLure.currentLure.transform.position);
     }
 
-
-    //StartCoroutine(Patrol()); //빙글빙글 돌아가는 팽이 (는 아니고 걍 돌아댕기기)
 
 }
