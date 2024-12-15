@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8970c983ce272a4abae63e048c18efb, type: 3}
-  m_Name: Minnow
+  m_Name: GoldFish
   m_EditorClassIdentifier: 
-  fishType: Minnow
-  description: Wow, is this a baby fish? It's better if we let go, perhaps?
-  bobbing: 4
-  weight: 5
-  speed: 10
+  fishType: Goldfish
+  description: Very small, round goldfish! Wait, isn't it orange?
+  bobbing: 5
+  weight: 6
+  speed: 7

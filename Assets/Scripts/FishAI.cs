@@ -58,14 +58,6 @@ public class FishAI : MonoBehaviour
         }
     }
 
-    public void Fighting()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-
-        }
-    }
-
 
     void NextDestination()
     {
@@ -129,9 +121,9 @@ public class FishAI : MonoBehaviour
         isKnockedBack = true;
 
         // NavMesh 에이전트 비활성화 없이 넉백 적용
-        agent.isStopped = true; // 이동 중지
+        agent.isStopped = true;
         float timer = 0f;
-        float knockbackStrength = 3; // 넉백 강도
+        float knockbackStrength = 3; 
         
         Vector3 initialPosition = transform.position;
 
@@ -148,10 +140,8 @@ public class FishAI : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log("fishBite before: " + bobbing.fishBite);
         bobbing.fishBite++;
-        Debug.Log("fishBite after: " + bobbing.fishBite);
-
+   
         // NavMesh 에이전트 활성화
         agent.isStopped = false; // 이동 재개
 

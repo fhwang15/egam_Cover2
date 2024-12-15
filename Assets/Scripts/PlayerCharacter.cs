@@ -9,16 +9,18 @@ public enum characterState
 {
     Default,
     Throwing,
-    Catching,
-    Fight,
-    Ending
+    Catching
 }
 
 public class PlayerCharacter : MonoBehaviour
 {
+    public static bool CatchFish = false;
+    public static bool restartFishing = false;
+
+
     public GameObject lure;
     public GameObject currentLure;
-    
+
     public Rigidbody rb;
     public float speed;
 
@@ -28,9 +30,6 @@ public class PlayerCharacter : MonoBehaviour
 
     bool isThrown; //I want to throw this one time
     bool isSuccessful;
-
-    bool beforeCaught;
-    bool canIncreasePower = true;
 
 
     public float CaughtMaxTime; //Maximum time that the fish will stay when you are reelingup
@@ -68,49 +67,67 @@ public class PlayerCharacter : MonoBehaviour
 
         CaughtMaxTime = 12f;
 
-        beforeCaught = true;
-
         isThrown = false;
         characterState = characterState.Default;
-
-        WinOrLose = ResultText.GetComponent<TextMeshProUGUI>();
-        TimerText = FishTimer.GetComponent<TextMeshProUGUI>();
-        PlayerText = currentPower.GetComponent<TextMeshProUGUI>();
-        Instruction = Press.GetComponent<TextMeshProUGUI>();
-
-        ResultText.SetActive(false);
-        FishTimer.SetActive(false);
-        currentPower.SetActive(false);
         ResetButton.SetActive(false);
-        Press.SetActive(false);
 
         rb = GetComponent<Rigidbody>();
+
+        CatchFish = false;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            characterState++;
+        Debug.Log(characterState.ToString());
 
-            if((int)characterState > 1)
-            {
-                characterState = 0; //returns to default state.
-            }
+        if (FishCondition.isCaught)
+        {
+            characterState = characterState.Catching;
         }
 
         switch (characterState)
         {
             case characterState.Default:
+
+                if ((int)characterState == 0 || (int)characterState == 1)
+                {
+                    if (Input.GetKeyDown(KeyCode.Space))
+                    {
+                        characterState++;
+
+                        if ((int)characterState > 1)
+                        {
+                            characterState = 0; //returns to default state.
+                        }
+                    }
+                }
+
                 DefaultState();
                 break;
             case characterState.Throwing:
+
+                if ((int)characterState == 0 || (int)characterState == 1)
+                {
+                    if (Input.GetKeyDown(KeyCode.Space))
+                    {
+                        characterState++;
+
+                        if ((int)characterState > 1)
+                        {
+                            characterState = 0; //returns to default state.
+                        }
+                    }
+                }
+
                 ThrowingState();
+                break;
+            case characterState.Catching:
+                CatchingState();
                 break;
         }
 
-      
     }
 
 
@@ -179,109 +196,14 @@ public class PlayerCharacter : MonoBehaviour
 
     void CatchingState()
     {
-
+        if (!CatchFish)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                CatchFish = true;
+            }
+        }
+        return;
     }
-   
-
-    void FightState()
-    {
-
-    }
-
-    //IEnumerator ExecuteGamePlay()
-    //{
-
-    //    if (SquareFish.isCaught && beforeCaught)
-    //    {
-    //        yield return StartCoroutine(ExecuteFishCaught());
-    //    }
-
-
-    //    else if (isSuccessful && !beforeCaught)
-    //    {
-    //        yield return new WaitForSeconds(1f);
-
-    //        yield return StartCoroutine(ExecuteWin());
-    //    }
-    //    else if (!isSuccessful && !beforeCaught)
-    //    {
-    //        yield return StartCoroutine(ExecuteLose());
-    //    }
-
-    //    fishingRoutine = null;
-    //}
-
-    //IEnumerator ExecuteFishCaught()
-    //{
-    //    FishTimer.SetActive(true);
-    //    currentPower.SetActive(true);
-    //    Press.SetActive(true);
-
-    //    Instruction.text = "Press 'Z' to catch the fish!";
-
-    //    CaughtPlayerTime = CaughtMaxTime;
-    //    Debug.Log("Resetting Timer");
-
-    //    beforeCaught = true;
-
-    //    if (Input.GetKey(KeyCode.Z) && canIncreasePower)
-    //    {
-    //        currentPlayerPower = currentPlayerPower + playerPower;
-
-    //        PlayerText.text = currentPlayerPower.ToString();
-    //        if (currentPlayerPower >= 10)
-    //        {
-    //            currentPlayerPower = 10;
-    //        }
-
-    //        Debug.Log(currentPlayerPower);
-    //        canIncreasePower = false;
-
-    //        StartCoroutine(ResetPowerIncrement());
-    //    }
-
-    //    while (CaughtPlayerTime > 0)
-    //    {
-
-    //        CaughtPlayerTime -= Time.deltaTime;
-
-    //        yield return null;
-    //    }
-
-
-    //    isSuccessful = currentPlayerPower >= SquareFish.fishPower;
-    //    beforeCaught = false;
-    //    FishTimer.SetActive(false);
-    //}
-
-    //IEnumerator ResetPowerIncrement()
-    //{
-    //    yield return new WaitForSeconds(0.5f); // Wait for half a second
-    //    canIncreasePower = true; // Allow increment again
-    //}
-
-
-    //IEnumerator ExecuteWin()
-    //{
-    //    ResultText.SetActive(true);
-    //    ResetButton.SetActive(true);
-
-    //    WinOrLose.text = "Hurrah! You caught the Square Fish!";
-    //    Time.timeScale = 0f;
-
-    //    yield return null;
-    //}
-
-    //IEnumerator ExecuteLose()
-    //{
-    //    ResultText.SetActive(true);
-    //    ResetButton.SetActive(true);
-
-
-    //    WinOrLose.text = "The Square Fish Ran Away...";
-    //    Time.timeScale = 0f;
-
-    //    yield return null;
-    //}
 
 }

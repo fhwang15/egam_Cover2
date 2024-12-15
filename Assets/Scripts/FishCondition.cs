@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 
 public enum FishState
@@ -16,16 +18,16 @@ public enum FishState
 public class FishCondition : MonoBehaviour
 {
 
-    public Fish fish; //What type of Fish
+    public Fish[] randomfish; //What type of Fish
 
-    public bool isCaught; //See if it is caught or not.
+    int fishChooser;
+    private Fish fish;
+
+    public static bool isCaught; //See if it is caught or not.
     public bool hasBitten;
 
     public float bobbing; //몇번 톡톡 하는지 Random.Range를 통해 만들어질겅미~ Random.Range(0,6)
     public float fishBite; //Check how many times it has bitten.
-
-    public float weight; //애니메이션의 길이. 무거울수록 길어긴다.
-    public float speed; //시간 있으면 설정할거. 물고기가 얼마나 빨리움직쓰하는지
 
     public FishAI fishAi;
 
@@ -37,21 +39,29 @@ public class FishCondition : MonoBehaviour
     public Transform rayorigin;
     public LayerMask targetLayer;
 
+    public FishingCamera fishingCamera;
+    public static bool FishIsChecked;
+
+    public GameObject winText;
+    public GameObject resultText;
+    public TextMeshProUGUI FishName;
+    public TextMeshProUGUI FishDescription;
+
+    public GameObject LoseText;
+
+    public GameObject ResetButton;
+
 
     void Start()
     {
+        fishChooser = Random.Range(0, randomfish.Length);
+        fish = randomfish[fishChooser];
 
         //current bite
         fishBite = 1;
 
         //how many times it will bite
         bobbing = Random.Range(1, fish.bobbing);
-        
-
-        //stretch goals
-        weight = fish.weight; 
-        speed = fish.speed;
-
 
         
         fishAi = GetComponent<FishAI>();
@@ -59,6 +69,12 @@ public class FishCondition : MonoBehaviour
         isCaught = false;
         hasBitten = false;
 
+        winText.SetActive(false);
+        LoseText.SetActive(false);
+        ResetButton.SetActive(false);   
+
+        FishName.text = fish.fishType;
+        FishDescription.text = fish.description;
 
 
     }
@@ -87,8 +103,11 @@ public class FishCondition : MonoBehaviour
             case FishState.Fighting:
                 if (isCaught)
                 {
-                    
+                    StartCoroutine(FishIsCaught());
                 }
+
+                
+
                 break;
         }
 
@@ -112,7 +131,6 @@ public class FishCondition : MonoBehaviour
                     fishAi.Chasing();
                     break;
                 case FishState.Fighting:
-
                     break;
             }
         }
@@ -150,8 +168,56 @@ public class FishCondition : MonoBehaviour
             else if (fishBite > bobbing)
             {
                 isCaught = true;
+
+                ChangeState(FishState.Fighting);
+
             }
         }
     }
+
+    public bool fishIsChecked()
+    {
+        if (isCaught)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                return FishIsChecked = true;
+            }
+        }
+
+        return false;
+
+    }
+
+
+    IEnumerator FishIsCaught()
+    {
+        yield return new WaitForSeconds(1);
+
+        if (PlayerCharacter.CatchFish)
+        {
+            fishingCamera.OnFishCaught();
+            winText.SetActive(true);
+            resultText.SetActive(true);
+
+            ResetButton.SetActive(true);
+
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
+
+            fishingCamera.ResetCamera();
+        }
+
+        else if (!PlayerCharacter.CatchFish)
+        {
+            LoseText.SetActive(true);
+            ResetButton.SetActive(true);
+        }
+
+        Destroy(gameObject);
+
+        isCaught = false;
+        yield return null;
+    }
+
 
 }

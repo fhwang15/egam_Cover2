@@ -12,8 +12,6 @@ public class Fish : ScriptableObject
     public string fishType;
     public string description;
 
-    public Sprite Modeling; //stretchGoal
-
     public float bobbing; //몇번 톡톡 하는지 Random.Range를 통해 만들어질겅미~
     public float weight; //얼마나 많이 처 resist할건지
 
